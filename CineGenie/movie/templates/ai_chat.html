@@ -1,0 +1,649 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="{% static 'css/bootstrap-reboot.min.css' %}">
+	<link rel="stylesheet" href="{% static 'css/bootstrap-grid.min.css' %}">
+	<link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}">
+	<link rel="stylesheet" href="{% static 'css/slider-radio.css' %}">
+	<link rel="stylesheet" href="{% static 'css/select2.min.css' %}">
+	<link rel="stylesheet" href="{% static 'css/magnific-popup.css' %}">
+	<link rel="stylesheet" href="{% static 'css/plyr.css' %}">
+	<link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+	<!-- Favicons -->
+	<link rel="icon" type="image/png" href="{% static 'icon/favicon-32x32.png' %}" sizes="32x32">
+	<link rel="apple-touch-icon" href="{% static 'icon/favicon-32x32.png' %}">
+
+	<meta name="description" content="CineGenie - Movie Recommendation Platform">
+	<meta name="keywords" content="movies, recommendations, cinema, watch, online">
+	<meta name="author" content="CineGenie">
+	<title>AI Chat - CineGenie</title>
+
+	<!-- Add custom CSS for chat interface -->
+	<style>
+		.chat-container {
+			background-color: #222028;
+			border-radius: 6px;
+			box-shadow: 0 5px 25px 0 rgba(0,0,0,.3);
+			margin-top: 30px;
+			margin-bottom: 30px;
+			padding: 30px;
+			position: relative;
+			overflow: hidden;
+			min-height: 500px;
+			display: flex;
+			flex-direction: column;
+		}
+		
+		.chat-messages {
+			flex: 1;
+			overflow-y: auto;
+			padding: 15px;
+			margin-bottom: 20px;
+			max-height: 400px;
+			border-radius: 6px;
+			background-color: rgba(0,0,0,.2);
+		}
+		
+		.chat-input {
+			display: flex;
+			margin-top: auto;
+		}
+		
+		.chat-input input {
+			flex: 1;
+			background-color: #28282d;
+			border: 2px solid transparent;
+			height: 46px;
+			position: relative;
+			color: #fff;
+			font-size: 16px;
+			width: 100%;
+			border-radius: 6px;
+			padding: 0 20px;
+			font-family: 'Open Sans', sans-serif;
+		}
+		
+		.chat-input input:focus {
+			border-color: #ff55a5;
+			outline: none;
+		}
+		
+		.chat-input button {
+			margin-left: 15px;
+			height: 46px;
+			width: 46px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: linear-gradient(90deg, #ff55a5 0%, #ff5860 100%);
+			border-radius: 6px;
+			border: none;
+			cursor: pointer;
+			transition: .4s ease;
+		}
+		
+		.chat-input button:hover {
+			opacity: 0.8;
+		}
+		
+		.message {
+			margin-bottom: 15px;
+			display: flex;
+		}
+		
+		.message-content {
+			padding: 10px 15px;
+			border-radius: 18px;
+			max-width: 80%;
+		}
+		
+		.user-message {
+			justify-content: flex-end;
+		}
+		
+		.user-message .message-content {
+			background-color: #ff55a5;
+			color: #fff;
+			border-bottom-right-radius: 0;
+		}
+		
+		.ai-message {
+			justify-content: flex-start;
+		}
+		
+		.ai-message .message-content {
+			background-color: #28282d;
+			color: #fff;
+			border-bottom-left-radius: 0;
+		}
+		
+		.favorites-list {
+			background-color: #28282d;
+			border-radius: 6px;
+			padding: 20px;
+			margin-bottom: 30px;
+		}
+		
+		.favorites-title {
+			font-size: 18px;
+			font-weight: 500;
+			color: #fff;
+			margin-bottom: 15px;
+		}
+		
+		.favorite-item {
+			padding: 8px 15px;
+			background-color: rgba(255,85,165,.1);
+			border-radius: 6px;
+			margin-bottom: 10px;
+			display: flex;
+			align-items: center;
+			color: #fff;
+			cursor: pointer;
+		}
+		
+		.favorite-item:hover {
+			background-color: rgba(255,85,165,.2);
+		}
+		
+		.favorite-item svg {
+			width: 20px;
+			height: 20px;
+			fill: #ff55a5;
+			margin-right: 10px;
+		}
+		
+		.loading-dots {
+			display: inline-block;
+		}
+		
+		.loading-dots:after {
+			content: '...';
+			animation: dots 1.5s steps(5, end) infinite;
+		}
+		
+		@keyframes dots {
+			0%, 20% { content: '.'; }
+			40% { content: '..'; }
+			60%, 100% { content: '...'; }
+		}
+		
+		.empty-state {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 300px;
+			text-align: center;
+			color: #fff;
+			opacity: 0.6;
+		}
+		
+		.empty-state svg {
+			width: 64px;
+			height: 64px;
+			fill: #ff55a5;
+			margin-bottom: 20px;
+			opacity: 0.7;
+		}
+	</style>
+</head>
+<body>
+	<!-- header -->
+	<header class="header header--static">
+		<div class="container">
+			<div class="row">
+				<div class="col-12">
+					<div class="header__content">
+						<button class="header__menu" type="button">
+							<span></span>
+							<span></span>
+							<span></span>
+						</button>
+
+						<a href="{% url 'index' %}" class="header__logo">
+							<img src="{% static 'img/logo.svg' %}" alt="CineGenie">
+						</a>
+
+						<ul class="header__nav">
+							<li class="header__nav-item">
+								<a class="header__nav-link" href="{% url 'index' %}">Home</a>
+							</li>
+							<li class="header__nav-item">
+								<a class="header__nav-link" href="#">Catalog</a>
+							</li>
+						</ul>
+
+						<div class="header__actions">
+							<form action="{% url 'search_movies' %}" class="header__form">
+								<input class="header__form-input" type="text" name="query" placeholder="Search for movies..." id="movie-search-input">
+								<div class="search-results-dropdown" style="display: none; position: absolute; width: 100%; max-height: 70vh; overflow-y: auto; background-color: #222028; z-index: 1000; border-radius: 4px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); margin-top: 2px; left: 0; right: 0; top: 100%;">
+									<ul class="search-results-list" style="list-style: none; padding: 0; margin: 0;"></ul>
+								</div>
+								<button class="header__form-btn" type="submit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.71,20.29,18,16.61A9,9,0,1,0,16.61,18l3.68,3.68a1,1,0,0,0,1.42,0A1,1,0,0,0,21.71,20.29ZM11,18a7,7,0,1,1,7-7A7,7,0,0,1,11,18Z"/></svg></button>
+								<button type="button" class="header__form-close"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.3345 0.000183105H5.66549C2.26791 0.000183105 0.000488281 2.43278 0.000488281 5.91618V14.0842C0.000488281 17.5709 2.26186 20.0002 5.66549 20.0002H14.3335C17.7381 20.0002 20.0005 17.5709 20.0005 14.0842V5.91618C20.0005 2.42969 17.7383 0.000183105 14.3345 0.000183105ZM5.66549 1.50018H14.3345C16.885 1.50018 18.5005 3.23515 18.5005 5.91618V14.0842C18.5005 16.7653 16.8849 18.5002 14.3335 18.5002H5.66549C3.11525 18.5002 1.50049 16.7655 1.50049 14.0842V5.91618C1.50049 3.23856 3.12083 1.50018 5.66549 1.50018ZM7.07071 7.0624C7.33701 6.79616 7.75367 6.772 8.04726 6.98988L8.13137 7.06251L9.99909 8.93062L11.8652 7.06455C12.1581 6.77166 12.6329 6.77166 12.9258 7.06455C13.1921 7.33082 13.2163 7.74748 12.9984 8.04109L12.9258 8.12521L11.0596 9.99139L12.9274 11.8595C13.2202 12.1524 13.2202 12.6273 12.9273 12.9202C12.8309 13.0166 12.7162 13.0846 12.5932 13.1221C12.4702 13.1597 12.3411 13.1660 12.2154 13.1405C12.0897 13.115 11.9713 13.0585 11.8689 12.9748C11.7665 12.8911 11.6825 12.7822 11.6236 12.658L11.5843 12.5531L9.99898 10.9672L8.13382 12.8562C8.03737 12.9527 7.92269 13.0206 7.79969 13.0582C7.67669 13.0958 7.54758 13.1021 7.42187 13.0766C7.29616 13.051 7.17779 12.9946 7.07537 12.9108C6.97295 12.8271 6.88905 12.7182 6.83016 12.594L6.79092 12.4892C6.73183 12.2902 6.76166 12.0739 6.8739 11.8962L6.93355 11.8127L8.79923 9.99128L6.93251 8.12475C6.63963 7.83186 6.63963 7.35701 6.93251 7.06412L7.07071 7.0624Z"/></svg></button>
+							</form>
+
+							<button class="header__search" type="button">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.71,20.29,18,16.61A9,9,0,1,0,16.61,18l3.68,3.68a1,1,0,0,0,1.42,0A1,1,0,0,0,21.71,20.29ZM11,18a7,7,0,1,1,7-7A7,7,0,0,1,11,18Z"/></svg>
+							</button>
+
+							{% if user.is_authenticated %}
+							<div class="dropdown header__user">
+								<a class="dropdown-toggle header__user-btn" href="#" role="button" id="dropdownMenuClick" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									<span>{{ user.username }}</span>
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,2A10,10,0,0,0,2,12a9.89,9.89,0,0,0,2.26,6.33l-2,2a1,1,0,0,0-.21,1.09A1,1,0,0,0,3,22h9A10,10,0,0,0,12,2Zm0,18H5.41l.93-.93a1,1,0,0,0,.3-.71,1,1,0,0,0-.3-.7A8,8,0,1,1,12,20Z"></path></svg>
+								</a>
+
+								<div class="dropdown-menu header__user-menu" aria-labelledby="dropdownMenuClick">
+									<a href="{% url 'ai_chat' %}" class="header__user-menu-item">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,16c-2.21,0-4-1.79-4-4 c0-2.21,1.79-4,4-4c2.21,0,4,1.79,4,4C16,14.21,14.21,16,12,16z M18.58,7.58C18.1,7.31,17.55,7.13,17,7.03V6h-2v1.03 C14.45,7.13,13.9,7.31,13.41,7.58L12,6.17l-1.41,1.41l1.41,1.41C11.73,9.69,11.55,10.45,11.55,11.25c0,0.8,0.18,1.56,0.47,2.25L10.61,14.91l1.41,1.41 l1.41-1.41C14.1,15.59,14.86,15.77,15.66,15.77c0.8,0,1.56-0.18,2.25-0.47l1.41,1.41l1.41-1.41l-1.41-1.41 C19.59,13.1,19.77,12.34,19.77,11.55C19.77,10.75,19.59,9.99,19.3,9.3z"/></svg> <span>AI Chat</span>
+									</a>
+									<a href="{% url 'logout' %}" class="header__user-menu-item">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.5,15.1a1,1,0,0,0-1.34.45A8,8,0,1,1,12,4a7.93,7.93,0,0,1,7.16,4.45,1,1,0,0,0,1.8-.9,10,10,0,1,0,0,8.9A1,1,0,0,0,20.5,15.1ZM21,11H11.41l2.3-2.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0-.21.33,1,1,0,0,0,0,.76,1,1,0,0,0,.21.33l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42L11.41,13H21a1,1,0,0,0,0-2Z"></path></svg> <span>Sign Out</span>
+									</a>
+								</div>
+							</div>
+							{% else %}
+							<a href="{% url 'login' %}" class="header__user">
+								<span>Sign in</span>
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,12a1,1,0,0,0-1-1H11.41l2.3-2.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0-.21.33,1,1,0,0,0,0,.76,1,1,0,0,0,.21.33l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42L11.41,13H19A1,1,0,0,0,20,12Z"/></svg>
+							</a>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
+	<!-- end header -->
+
+	<!-- main content -->
+	<section class="section section--head section--head-fixed">
+		<div class="container">
+			<div class="row">
+				<div class="col-12 col-xl-8">
+					<h1 class="section__title">AI Movie Chat</h1>
+					<p class="section__text">Ask our AI assistant about movies, TV shows, and multimedia. It can provide recommendations, answer questions, and help you discover new content to watch.</p>
+					
+					<!-- Chat interface -->
+					<div class="chat-container">
+						<div class="chat-messages" id="chat-messages">
+							<div class="message ai-message">
+								<div class="message-content">
+									Hello! I'm your CineGenie assistant. I can talk about movies, TV shows, and provide recommendations based on your interests. What would you like to know about today?
+								</div>
+							</div>
+							<!-- Messages will be appended here -->
+						</div>
+						
+						<div class="chat-input">
+							<input type="text" id="user-input" placeholder="Type your message here...">
+							<button id="send-button">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="#ffffff">
+									<path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+								</svg>
+							</button>
+						</div>
+					</div>
+				</div>
+				
+				<div class="col-12 col-xl-4">
+					<div class="favorites-list">
+						<h3 class="favorites-title">Your Favorite Movies</h3>
+						<div id="favorites-container">
+							<!-- Favorites will be loaded here -->
+							<div class="empty-state">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+								<p>Your favorite movies will appear here</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<!-- end main content -->
+
+	<!-- footer -->
+	<footer class="footer">
+		<div class="container">
+			<div class="row">
+				<div class="col-12">
+					<div class="footer__content">
+						<a href="{% url 'index' %}" class="footer__logo">
+							<img src="{% static 'img/logo.svg' %}" alt="">
+						</a>
+
+						<span class="footer__copyright">© CineGenie, 2023</span>
+
+						<nav class="footer__nav">
+							<a href="{% url 'privacy' %}">Privacy policy</a>
+							<a href="{% url 'login' %}">Sign in</a>
+							<a href="{% url 'signup' %}">Sign up</a>
+						</nav>
+
+						<button class="footer__back" type="button">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.1714 12.0007L8.22168 7.05093L9.63589 5.63672L15.9999 12.0007L9.63589 18.3646L8.22168 16.9504L13.1714 12.0007Z"/></svg>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
+	<!-- end footer -->
+
+	<!-- JS -->
+	<script src="{% static 'js/jquery-3.5.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+	<script src="{% static 'js/owl.carousel.min.js' %}"></script>
+	<script src="{% static 'js/slider-radio.js' %}"></script>
+	<script src="{% static 'js/select2.min.js' %}"></script>
+	<script src="{% static 'js/smooth-scrollbar.js' %}"></script>
+	<script src="{% static 'js/jquery.magnific-popup.min.js' %}"></script>
+	<script src="{% static 'js/plyr.min.js' %}"></script>
+	<script src="{% static 'js/main.js' %}"></script>
+	
+	<!-- Live Search Script -->
+	<script>
+		$(document).ready(function() {
+			let searchTimer;
+			const searchInput = $('#movie-search-input');
+			const searchResultsDropdown = $('.search-results-dropdown');
+			const searchResultsList = $('.search-results-list');
+			
+			// Handle input in search box
+			searchInput.on('input', function() {
+				const query = $(this).val().trim();
+				
+				// Clear previous timer
+				clearTimeout(searchTimer);
+				
+				// Hide dropdown if query is empty
+				if (query === '') {
+					searchResultsDropdown.hide();
+					return;
+				}
+				
+				// Set a timer to avoid making requests on every keystroke
+				searchTimer = setTimeout(function() {
+					// Show loading indicator
+					searchResultsList.html('<li style="padding: 15px; text-align: center;">Loading...</li>');
+					searchResultsDropdown.show();
+					
+					// Make AJAX request to search endpoint
+					$.ajax({
+						url: '{% url "search_movies" %}',
+						data: { query: query },
+						type: 'GET',
+						dataType: 'json',
+						headers: { 'X-Requested-With': 'XMLHttpRequest' },
+						success: function(response) {
+							// Clear previous results
+							searchResultsList.empty();
+							
+							// If no results, show a message
+							if (!response.results || response.results.length === 0) {
+								searchResultsList.html('<li style="padding: 15px; text-align: center;">No results found</li>');
+								return;
+							}
+							
+							// Show more results (up to 10)
+							const results = response.results.slice(0, 10);
+							
+							// Add results to dropdown
+							results.forEach(function(movie) {
+								const posterImg = movie.poster_path ? 
+									`<img src="${movie.poster_path}" alt="${movie.title}" style="width: 50px; height: 75px; margin-right: 15px; border-radius: 4px;">` : 
+									'<div style="width: 50px; height: 75px; background-color: #333; margin-right: 15px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #666; font-size: 10px; text-align: center;">No Image</div>';
+								
+								const year = movie.release_year ? ` (${movie.release_year})` : '';
+								const rating = movie.vote_average ? ` - ${movie.vote_average}★` : '';
+								const overview = movie.overview ? `<div style="font-size: 0.8em; color: #aaa; margin-top: 5px;">${movie.overview}</div>` : '';
+								
+								const listItem = `
+									<li style="padding: 15px; border-bottom: 1px solid #2b2b2b; display: flex; align-items: center;">
+										<a href="{% url 'movie_details' %}?id=${movie.id}" style="display: flex; align-items: center; color: #fff; text-decoration: none; width: 100%;">
+											${posterImg}
+											<div style="flex: 1;">
+												<div style="font-weight: bold; font-size: 1.1em;">${movie.title}${year}</div>
+												<div style="font-size: 0.9em; color: #bbb; margin-top: 3px;">${rating}</div>
+												${overview}
+											</div>
+										</a>
+									</li>
+								`;
+								
+								searchResultsList.append(listItem);
+							});
+							
+							// Add a "View all results" link at the bottom
+							if (response.results.length > 10) {
+								const viewAllLink = `
+									<li style="padding: 15px; text-align: center; background-color: #1a1a1a;">
+										<a href="{% url 'search_movies' %}?query=${encodeURIComponent(query)}" style="color: #ff55a5; text-decoration: none; font-weight: bold;">
+											View all ${response.results.length} results
+										</a>
+									</li>
+								`;
+								searchResultsList.append(viewAllLink);
+							}
+						},
+						error: function(error) {
+							console.error('Search error:', error);
+							searchResultsList.html('<li style="padding: 15px; text-align: center;">Error loading results</li>');
+							searchResultsDropdown.show(); // Make sure error message is shown
+						}
+					});
+				}, 300); // 300ms delay
+			});
+			
+			// Hide dropdown when clicking outside
+			$(document).on('click', function(event) {
+				if (!$(event.target).closest('.header__form').length) {
+					searchResultsDropdown.hide();
+				}
+			});
+			
+			// Show dropdown when focusing on input if there's a value
+			searchInput.on('focus', function() {
+				if ($(this).val().trim() !== '') {
+					$(this).trigger('input');
+				}
+			});
+			
+			// Handle mobile responsiveness better
+			$(window).on('resize', function() {
+				if (searchResultsDropdown.is(':visible')) {
+					// Ensure the dropdown width matches the search form
+					searchResultsDropdown.css('width', searchInput.closest('.header__form').outerWidth() + 'px');
+				}
+			});
+
+			// Trigger resize once to set initial width
+			$(window).trigger('resize');
+		});
+	</script>
+	
+	<!-- AI Chat Script -->
+	<script>
+		$(document).ready(function() {
+			const chatMessages = $('#chat-messages');
+			const userInput = $('#user-input');
+			const sendButton = $('#send-button');
+			const favoritesContainer = $('#favorites-container');
+			
+			// Load favorites from localStorage
+			loadFavorites();
+			
+			// Simulate Gemini API - this would be replaced with actual API calls
+			function simulateAIResponse(userMessage) {
+				// Process user message and generate a relevant response about movies
+				let response = "";
+				const lowercaseMessage = userMessage.toLowerCase();
+				
+				// Check if user is asking about favorites
+				if (lowercaseMessage.includes("favorite") || lowercaseMessage.includes("favourites")) {
+					const favorites = JSON.parse(localStorage.getItem('movieFavorites')) || [];
+					if (favorites.length > 0) {
+						response = "Your favorite movies include: " + favorites.map(f => f.title).join(", ") + ". Would you like recommendations based on these?";
+					} else {
+						response = "You don't have any favorite movies yet. You can add favorites by clicking the plus icon on any movie.";
+					}
+				}
+				// Check if asking for recommendations
+				else if (lowercaseMessage.includes("recommend") || lowercaseMessage.includes("suggestion") || 
+						lowercaseMessage.includes("what should i watch")) {
+					response = "Based on current trends, I'd recommend checking out recent popular films like 'Dune: Part Two', 'Oppenheimer', or 'Poor Things'. What genres do you typically enjoy?";
+				}
+				// Check if asking about specific genres
+				else if (lowercaseMessage.includes("action")) {
+					response = "Some great action movies include 'John Wick', 'Mad Max: Fury Road', and 'The Matrix'. The action genre continues to evolve with impressive stunts and special effects!";
+				}
+				else if (lowercaseMessage.includes("comedy")) {
+					response = "For comedy, I'd suggest classics like 'Superbad', recent hits like 'Barbie', or TV shows like 'Ted Lasso' if you prefer series. Comedy styles vary widely - do you prefer slapstick, dry humor, or satirical comedy?";
+				}
+				else if (lowercaseMessage.includes("drama") || lowercaseMessage.includes("serious")) {
+					response = "Drama films like 'The Shawshank Redemption', 'Schindler's List', and 'The Godfather' are considered some of the greatest of all time. More recently, 'Oppenheimer' received critical acclaim.";
+				}
+				else if (lowercaseMessage.includes("sci-fi") || lowercaseMessage.includes("science fiction")) {
+					response = "Science fiction offers thought-provoking narratives. Consider watching 'Blade Runner 2049', 'Arrival', or 'Interstellar' for stunning visuals and deep storylines.";
+				}
+				// Default responses
+				else if (lowercaseMessage.includes("hello") || lowercaseMessage.includes("hi") || lowercaseMessage.includes("hey")) {
+					response = "Hello! I'm your movie assistant. I can recommend movies, discuss films, or chat about TV shows. What would you like to talk about today?";
+				}
+				else if (lowercaseMessage.includes("thank")) {
+					response = "You're welcome! Feel free to ask if you need more movie recommendations or want to discuss any films.";
+				}
+				else if (lowercaseMessage.includes("how are you")) {
+					response = "I'm doing well! Always excited to talk about movies and help you find your next favorite film. How about you?";
+				}
+				else {
+					response = "That's an interesting question about entertainment! I can recommend movies, discuss film themes, actors, directors, or help you find something new to watch. Could you tell me more about what you're looking for?";
+				}
+				
+				return response;
+			}
+			
+			// Add a message to the chat
+			function addMessage(content, isUser = false) {
+				const messageClass = isUser ? 'user-message' : 'ai-message';
+				const message = $(`
+					<div class="message ${messageClass}">
+						<div class="message-content">
+							${content}
+						</div>
+					</div>
+				`);
+				
+				chatMessages.append(message);
+				scrollToBottom();
+			}
+			
+			// Add AI thinking indicator
+			function showThinking() {
+				const thinking = $(`
+					<div class="message ai-message" id="thinking">
+						<div class="message-content">
+							<span class="loading-dots">Thinking</span>
+						</div>
+					</div>
+				`);
+				
+				chatMessages.append(thinking);
+				scrollToBottom();
+			}
+			
+			// Remove thinking indicator
+			function hideThinking() {
+				$('#thinking').remove();
+			}
+			
+			// Scroll to bottom of chat
+			function scrollToBottom() {
+				chatMessages.scrollTop(chatMessages[0].scrollHeight);
+			}
+			
+			// Handle sending a message
+			function sendMessage() {
+				const message = userInput.val().trim();
+				
+				if (message === '') return;
+				
+				// Add user message to chat
+				addMessage(message, true);
+				
+				// Clear input
+				userInput.val('');
+				
+				// Show thinking indicator
+				showThinking();
+				
+				// Simulate delay for AI response
+				setTimeout(function() {
+					// Remove thinking indicator
+					hideThinking();
+					
+					// Generate and add AI response
+					const response = simulateAIResponse(message);
+					addMessage(response);
+				}, 1000);
+			}
+			
+			// Load favorites from localStorage
+			function loadFavorites() {
+				const favorites = JSON.parse(localStorage.getItem('movieFavorites')) || [];
+				
+				if (favorites.length === 0) {
+					// Show empty state
+					return;
+				}
+				
+				// Clear container
+				favoritesContainer.empty();
+				
+				// Add each favorite
+				favorites.forEach(function(movie) {
+					const favoriteItem = $(`
+						<div class="favorite-item" data-movie-id="${movie.id}">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+							<span>${movie.title}</span>
+						</div>
+					`);
+					
+					// Add click handler to mention in chat
+					favoriteItem.on('click', function() {
+						userInput.val(`Tell me about ${movie.title}`);
+						userInput.focus();
+					});
+					
+					favoritesContainer.append(favoriteItem);
+				});
+			}
+			
+			// Event listeners
+			sendButton.on('click', sendMessage);
+			
+			userInput.on('keypress', function(e) {
+				if (e.which === 13) {
+					sendMessage();
+				}
+			});
+			
+			// Check for updates to favorites
+			window.addEventListener('storage', function(e) {
+				if (e.key === 'movieFavorites') {
+					loadFavorites();
+				}
+			});
+		});
+	</script>
+</body>
+</html> 
