@@ -56,14 +56,9 @@
 			<div class="row">
 				<div class="col-12">
 					<div class="header__content">
-						<button class="header__menu" type="button">
-							<span></span>
-							<span></span>
-							<span></span>
-						</button>
 
 						<a href="{% url 'index' %}" class="header__logo">
-							<img src="{% static 'img/logo.svg' %}" alt="CineGenie">
+							<img src="{% static 'img/logo.png' %}" alt="CineGenie">
 						</a>
 
 						<ul class="header__nav">
@@ -88,7 +83,7 @@
 						</ul>
 
 						<div class="header__actions">
-							<form action="{% url 'search_movies' %}" class="header__form">
+							<form action="/search/" class="header__form">
 								<input class="header__form-input" type="text" name="query" placeholder="Search for movies..." id="movie-search-input">
 								<div class="search-results-dropdown" style="display: none; position: absolute; width: 100%; max-height: 70vh; overflow-y: auto; background-color: #222028; z-index: 1000; border-radius: 4px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); margin-top: 2px; left: 0; right: 0; top: 100%;">
 									<ul class="search-results-list" style="list-style: none; padding: 0; margin: 0;"></ul>
@@ -109,7 +104,7 @@
 								</a>
 
 								<div class="dropdown-menu header__user-menu" aria-labelledby="dropdownMenuClick">
-									<a href="{% url 'ai_chat' %}" class="header__user-menu-item">
+									<a href="{% url 'aibot' %}" class="header__user-menu-item">
 										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,16c-2.21,0-4-1.79-4-4 c0-2.21,1.79-4,4-4c2.21,0,4,1.79,4,4C16,14.21,14.21,16,12,16z M18.58,7.58C18.1,7.31,17.55,7.13,17,7.03V6h-2v1.03 C14.45,7.13,13.9,7.31,13.41,7.58L12,6.17l-1.41,1.41l1.41,1.41C11.73,9.69,11.55,10.45,11.55,11.25c0,0.8,0.18,1.56,0.47,2.25L10.61,14.91l1.41,1.41 l1.41-1.41C14.1,15.59,14.86,15.77,15.66,15.77c0.8,0,1.56-0.18,2.25-0.47l1.41,1.41l1.41-1.41l-1.41-1.41 C19.59,13.1,19.77,12.34,19.77,11.55C19.77,10.75,19.59,9.99,19.3,9.3z"/></svg> <span>AI Chat</span>
 									</a>
 									<a href="{% url 'logout' %}" class="header__user-menu-item">
@@ -180,7 +175,7 @@
 	<!-- end home -->
 
 	<!-- popular -->
-	<section class="section">
+	{% comment %} <section class="section">
 		<div class="container">
 			<div class="row">
 				<div class="col-12">
@@ -226,7 +221,7 @@
 				</div>
 			</div>
 		</div>
-	</section>
+	</section> {% endcomment %}
 	<!-- end popular -->
 
 		<!-- top_rated -->
@@ -386,10 +381,10 @@
 				<div class="col-12">
 					<div class="footer__content">
 						<a href="{% url 'index' %}" class="footer__logo">
-							<img src="{% static 'img/logo.svg' %}" alt="">
+							<img src="{% static 'img/logo.png' %}" alt="">
 						</a>
 
-						<span class="footer__copyright">© CineGenie, 2023</span>
+						<span class="footer__copyright">© CineGenie, 2025</span>
 
 						<nav class="footer__nav">
 							<a href="{% url 'privacy' %}">Privacy policy</a>
@@ -507,7 +502,7 @@
 					
 					// Make AJAX request to search endpoint
 					$.ajax({
-						url: '{% url "search_movies" %}',
+						url: '/search/',
 						data: { query: query },
 						type: 'GET',
 						dataType: 'json',

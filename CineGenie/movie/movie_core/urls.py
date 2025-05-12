@@ -13,5 +13,8 @@ urlpatterns = [
     path('movie/<int:movie_id>/', views.movie_details, name="movie_details_with_id"),
     path('movie/', views.movie_details, name="movie_details"),
     path('search/', views.search_movies, name="search_movies"),
-    path('ai-chat/', views.ai_chat, name="ai_chat"),
+    # path('ai-chat/', views.ai_chat, name="ai_chat"),
+    path('aibot/', lambda request: views.render(request, 'aibot.html'), name="aibot"),
+    path('api/aibot-chat/', views.aibot_chat, name="aibot_chat"),
+    path('ai-chat-combined/', views.ai_chat_combined, name="ai_chat_combined"),
 ]

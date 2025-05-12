@@ -42,6 +42,34 @@
 			aspect-ratio: 2/3;
 			min-height: 250px;
 		}
+		.card__ott {
+			display: flex;
+			align-items: center;
+			margin-top: 10px;
+			padding: 5px;
+			border-radius: 5px;
+			background-color: rgba(255, 255, 255, 0.05);
+			transition: background-color 0.3s ease;
+		}
+		.card__ott:hover {
+			background-color: rgba(255, 255, 255, 0.1);
+		}
+		.card__ott-logo {
+			width: 24px;
+			height: 24px;
+			margin-right: 10px;
+			object-fit: contain;
+		}
+		.card__ott-text {
+			font-size: 12px;
+			color: rgba(255, 255, 255, 0.7);
+		}
+		.card__ott-link {
+			text-decoration: none;
+			color: inherit;
+			display: block;
+			width: 100%;
+		}
 	</style>
 
 </head>
@@ -52,14 +80,14 @@
 			<div class="row">
 				<div class="col-12">
 					<div class="header__content">
-						<button class="header__menu" type="button">
+						{% comment %} <button class="header__menu" type="button">
 							<span></span>
 							<span></span>
 							<span></span>
-						</button>
+						</button> {% endcomment %}
 
 						<a href="{% url 'index' %}" class="header__logo">
-							<img src="{% static 'img/logo.svg' %}" alt="CineGenie">
+							<img src="{% static 'img/logo.png' %}" alt="CineGenie">
 						</a>
 
 						<ul class="header__nav">
@@ -80,10 +108,13 @@
 									<li><a href="#">Cartoons</a></li>
 								</ul>
 							</li>
+							<li class="header__nav-item">
+								<a class="header__nav-link" href="{% url 'ai_chat_combined' %}">AI Chat</a>
+							</li>
 						</ul>
 
 						<div class="header__actions">
-							<form action="{% url 'search_movies' %}" class="header__form">
+							<form action="/search/" class="header__form">
 								<input class="header__form-input" type="text" name="query" placeholder="Search for movies..." value="{{ query }}">
 								<button class="header__form-btn" type="submit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.71,20.29,18,16.61A9,9,0,1,0,16.61,18l3.68,3.68a1,1,0,0,0,1.42,0A1,1,0,0,0,21.71,20.29ZM11,18a7,7,0,1,1,7-7A7,7,0,0,1,11,18Z"/></svg></button>
 								<button type="button" class="header__form-close"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.3345 0.000183105H5.66549C2.26791 0.000183105 0.000488281 2.43278 0.000488281 5.91618V14.0842C0.000488281 17.5709 2.26186 20.0002 5.66549 20.0002H14.3335C17.7381 20.0002 20.0005 17.5709 20.0005 14.0842V5.91618C20.0005 2.42969 17.7383 0.000183105 14.3345 0.000183105ZM5.66549 1.50018H14.3345C16.885 1.50018 18.5005 3.23515 18.5005 5.91618V14.0842C18.5005 16.7653 16.8849 18.5002 14.3335 18.5002H5.66549C3.11525 18.5002 1.50049 16.7655 1.50049 14.0842V5.91618C1.50049 3.23856 3.12083 1.50018 5.66549 1.50018ZM7.07071 7.0624C7.33701 6.79616 7.75367 6.772 8.04726 6.98988L8.13137 7.06251L9.99909 8.93062L11.8652 7.06455C12.1581 6.77166 12.6329 6.77166 12.9258 7.06455C13.1921 7.33082 13.2163 7.74748 12.9984 8.04109L12.9258 8.12521L11.0596 9.99139L12.9274 11.8595C13.2202 12.1524 13.2202 12.6273 12.9273 12.9202C12.661 13.1864 12.2443 13.2106 11.9507 12.9927L11.8666 12.9201L9.99898 10.9672L8.13382 12.8562C7.84093 13.1491 7.36605 13.1491 7.07316 12.8562C6.80689 12.5899 6.78269 12.1733 7.00054 11.8797L7.07316 11.7956L8.93843 9.99128L7.0706 8.12306C6.77774 7.83013 6.77779 7.35526 7.07071 7.0624Z"/></svg></button>
@@ -101,8 +132,8 @@
 								</a>
 
 								<div class="dropdown-menu header__user-menu" aria-labelledby="dropdownMenuClick">
-									<a href="#" class="header__user-menu-item">
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,2A10,10,0,0,0,2,12a9.89,9.89,0,0,0,2.26,6.33l-2,2a1,1,0,0,0-.21,1.09A1,1,0,0,0,3,22h9A10,10,0,0,0,12,2Zm0,18H5.41l.93-.93a1,1,0,0,0,.3-.71,1,1,0,0,0-.3-.7A8,8,0,1,1,12,20Z"></path></svg> <span>Profile</span>
+									<a href="{% url 'ai_chat_combined' %}" class="header__user-menu-item">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,16c-2.21,0-4-1.79-4-4 c0-2.21,1.79-4,4-4c2.21,0,4,1.79,4,4C16,14.21,14.21,16,12,16z M18.58,7.58C18.1,7.31,17.55,7.13,17,7.03V6h-2v1.03 C14.45,7.13,13.9,7.31,13.41,7.58L12,6.17l-1.41,1.41l1.41,1.41C11.73,9.69,11.55,10.45,11.55,11.25c0,0.8,0.18,1.56,0.47,2.25L10.61,14.91l1.41,1.41 l1.41-1.41C14.1,15.59,14.86,15.77,15.66,15.77c0.8,0,1.56-0.18,2.25-0.47l1.41,1.41l1.41-1.41l-1.41-1.41 C19.59,13.1,19.77,12.34,19.77,11.55C19.77,10.75,19.59,9.99,19.3,9.3z"/></svg> <span>AI Chat</span>
 									</a>
 									<a href="{% url 'logout' %}" class="header__user-menu-item">
 										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.5,15.1a1,1,0,0,0-1.34.45A8,8,0,1,1,12,4a7.93,7.93,0,0,1,7.16,4.45,1,1,0,0,0,1.8-.9,10,10,0,1,0,0,8.9A1,1,0,0,0,20.5,15.1ZM21,11H11.41l2.3-2.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0-.21.33,1,1,0,0,0,0,.76,1,1,0,0,0,.21.33l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42L11.41,13H21a1,1,0,0,0,0-2Z"></path></svg> <span>Sign Out</span>
@@ -142,7 +173,7 @@
 				<div class="col-12">
 					<div class="catalog__nav">
 						<div class="catalog__select-wrap">
-							<form action="{% url 'search_movies' %}" method="get">
+							<form action="/search/" method="get">
 								<input type="text" name="query" class="form__input" placeholder="Search for movies..." value="{{ query }}">
 								<button type="submit" class="form__btn">Search</button>
 							</form>
@@ -154,7 +185,7 @@
 						{% for movie in results %}
 						<div class="col-6 col-sm-4 col-lg-3 col-xl-2">
 							<div class="card">
-								<a href="{% url 'movie_details' %}?id={{ movie.id }}" class="card__cover">
+								<a href="/movie/?id={{ movie.id }}" class="card__cover">
 									{% if movie.poster_path %}
 									<img src="{{ movie.poster_path }}" alt="{{ movie.title }}">
 									{% else %}
@@ -170,7 +201,7 @@
 								{% if movie.vote_average %}
 								<span class="card__rating"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22,9.67A1,1,0,0,0,21.14,9l-5.69-.83L12.9,3a1,1,0,0,0-1.8,0L8.55,8.16,2.86,9a1,1,0,0,0-.81.68,1,1,0,0,0,.25,1l4.13,4-1,5.68A1,1,0,0,0,6.9,21.44L12,18.77l5.1,2.67a.93.93,0,0,0,.46.12,1,1,0,0,0,.59-.19,1,1,0,0,0,.4-1l-1-5.68,4.13-4A1,1,0,0,0,22,9.67Zm-6.15,4a1,1,0,0,0-.29.88l.72,4.2-3.76-2a1.06,1.06,0,0,0-.94,0l-3.76,2,.72-4.2a1,1,0,0,0-.29-.88l-3-3,4.21-.61a1,1,0,0,0,.76-.55L12,5.7l1.88,3.82a1,1,0,0,0,.76.55l4.21.61Z"/></svg> {{ movie.vote_average }}</span>
 								{% endif %}
-								<h3 class="card__title"><a href="{% url 'movie_details' %}?id={{ movie.id }}">{{ movie.title }}</a></h3>
+								<h3 class="card__title"><a href="/movie/?id={{ movie.id }}">{{ movie.title }}</a></h3>
 								<ul class="card__list">
 									<li>Free</li>
 									{% if movie.release_year %}
@@ -182,6 +213,17 @@
 									<p>{{ movie.overview }}</p>
 								</div>
 								{% endif %}
+								
+								{% comment %} {% if movie.ott_platform %}
+								<a href="{{ movie.ott_platform.url }}" target="_blank" class="card__ott-link">
+									<div class="card__ott">
+										<div class="card__ott-text">
+											<span style="display: inline-block; width: 24px; height: 24px; margin-right: 10px; background-color: #333; border-radius: 4px; vertical-align: middle; text-align: center; line-height: 24px;">{{ movie.ott_platform.name|slice:":1" }}</span>
+											Watch on {{ movie.ott_platform.name }}
+										</div>
+									</div>
+								</a>
+								{% endif %} {% endcomment %}
 							</div>
 						</div>
 						{% endfor %}
@@ -214,10 +256,10 @@
 				<div class="col-12">
 					<div class="footer__content">
 						<a href="{% url 'index' %}" class="footer__logo">
-							<img src="{% static 'img/logo.svg' %}" alt="">
+							<img src="{% static 'img/logo.png' %}" alt="">
 						</a>
 
-						<span class="footer__copyright">© CineGenie, 2023</span>
+						<span class="footer__copyright">© CineGenie, 2025</span>
 
 						<nav class="footer__nav">
 							<a href="{% url 'privacy' %}">Privacy policy</a>

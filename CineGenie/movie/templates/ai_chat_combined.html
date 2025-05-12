@@ -192,6 +192,16 @@
 			margin-bottom: 20px;
 			opacity: 0.7;
 		}
+		
+		.header__logo img {
+			height: 60px;
+			width: auto;
+		}
+		
+		.footer__logo img {
+			height: 60px;
+			width: auto;
+		}
 	</style>
 </head>
 <body>
@@ -201,14 +211,14 @@
 			<div class="row">
 				<div class="col-12">
 					<div class="header__content">
-						<button class="header__menu" type="button">
+						{% comment %} <button class="header__menu" type="button">
 							<span></span>
 							<span></span>
 							<span></span>
-						</button>
+						</button> {% endcomment %}
 
 						<a href="{% url 'index' %}" class="header__logo">
-							<img src="{% static 'img/logo.svg' %}" alt="CineGenie">
+							<img src="{% static 'img/cinegenie-logo.jpg' %}" alt="CineGenie">
 						</a>
 
 						<ul class="header__nav">
@@ -242,7 +252,7 @@
 								</a>
 
 								<div class="dropdown-menu header__user-menu" aria-labelledby="dropdownMenuClick">
-									<a href="{% url 'ai_chat' %}" class="header__user-menu-item">
+									<a href="{% url 'ai_chat_combined' %}" class="header__user-menu-item">
 										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,16c-2.21,0-4-1.79-4-4 c0-2.21,1.79-4,4-4c2.21,0,4,1.79,4,4C16,14.21,14.21,16,12,16z M18.58,7.58C18.1,7.31,17.55,7.13,17,7.03V6h-2v1.03 C14.45,7.13,13.9,7.31,13.41,7.58L12,6.17l-1.41,1.41l1.41,1.41C11.73,9.69,11.55,10.45,11.55,11.25c0,0.8,0.18,1.56,0.47,2.25L10.61,14.91l1.41,1.41 l1.41-1.41C14.1,15.59,14.86,15.77,15.66,15.77c0.8,0,1.56-0.18,2.25-0.47l1.41,1.41l1.41-1.41l-1.41-1.41 C19.59,13.1,19.77,12.34,19.77,11.55C19.77,10.75,19.59,9.99,19.3,9.3z"/></svg> <span>AI Chat</span>
 									</a>
 									<a href="{% url 'logout' %}" class="header__user-menu-item">
@@ -318,7 +328,7 @@
 				<div class="col-12">
 					<div class="footer__content">
 						<a href="{% url 'index' %}" class="footer__logo">
-							<img src="{% static 'img/logo.svg' %}" alt="">
+							<img src="{% static 'img/cinegenie-logo.jpg' %}" alt="CineGenie">
 						</a>
 
 						<span class="footer__copyright">© CineGenie, 2023</span>
@@ -427,7 +437,7 @@
 							if (response.results.length > 10) {
 								const viewAllLink = `
 									<li style="padding: 15px; text-align: center; background-color: #1a1a1a;">
-										<a href="{% url 'search_movies' %}?query=${encodeURIComponent(query)}" style="color: #ff55a5; text-decoration: none; font-weight: bold;">
+										<a href="/search/?query=${encodeURIComponent(query)}" style="color: #ff55a5; text-decoration: none; font-weight: bold;">
 											View all ${response.results.length} results
 										</a>
 									</li>
@@ -471,7 +481,7 @@
 		});
 	</script>
 	
-	<!-- AI Chat Script -->
+	<!-- AI Chat Script with Real Backend Integration -->
 	<script>
 		$(document).ready(function() {
 			const chatMessages = $('#chat-messages');
@@ -481,56 +491,6 @@
 			
 			// Load favorites from localStorage
 			loadFavorites();
-			
-			// Simulate Gemini API - this would be replaced with actual API calls
-			function simulateAIResponse(userMessage) {
-				// Process user message and generate a relevant response about movies
-				let response = "";
-				const lowercaseMessage = userMessage.toLowerCase();
-				
-				// Check if user is asking about favorites
-				if (lowercaseMessage.includes("favorite") || lowercaseMessage.includes("favourites")) {
-					const favorites = JSON.parse(localStorage.getItem('movieFavorites')) || [];
-					if (favorites.length > 0) {
-						response = "Your favorite movies include: " + favorites.map(f => f.title).join(", ") + ". Would you like recommendations based on these?";
-					} else {
-						response = "You don't have any favorite movies yet. You can add favorites by clicking the plus icon on any movie.";
-					}
-				}
-				// Check if asking for recommendations
-				else if (lowercaseMessage.includes("recommend") || lowercaseMessage.includes("suggestion") || 
-						lowercaseMessage.includes("what should i watch")) {
-					response = "Based on current trends, I'd recommend checking out recent popular films like 'Dune: Part Two', 'Oppenheimer', or 'Poor Things'. What genres do you typically enjoy?";
-				}
-				// Check if asking about specific genres
-				else if (lowercaseMessage.includes("action")) {
-					response = "Some great action movies include 'John Wick', 'Mad Max: Fury Road', and 'The Matrix'. The action genre continues to evolve with impressive stunts and special effects!";
-				}
-				else if (lowercaseMessage.includes("comedy")) {
-					response = "For comedy, I'd suggest classics like 'Superbad', recent hits like 'Barbie', or TV shows like 'Ted Lasso' if you prefer series. Comedy styles vary widely - do you prefer slapstick, dry humor, or satirical comedy?";
-				}
-				else if (lowercaseMessage.includes("drama") || lowercaseMessage.includes("serious")) {
-					response = "Drama films like 'The Shawshank Redemption', 'Schindler's List', and 'The Godfather' are considered some of the greatest of all time. More recently, 'Oppenheimer' received critical acclaim.";
-				}
-				else if (lowercaseMessage.includes("sci-fi") || lowercaseMessage.includes("science fiction")) {
-					response = "Science fiction offers thought-provoking narratives. Consider watching 'Blade Runner 2049', 'Arrival', or 'Interstellar' for stunning visuals and deep storylines.";
-				}
-				// Default responses
-				else if (lowercaseMessage.includes("hello") || lowercaseMessage.includes("hi") || lowercaseMessage.includes("hey")) {
-					response = "Hello! I'm your movie assistant. I can recommend movies, discuss films, or chat about TV shows. What would you like to talk about today?";
-				}
-				else if (lowercaseMessage.includes("thank")) {
-					response = "You're welcome! Feel free to ask if you need more movie recommendations or want to discuss any films.";
-				}
-				else if (lowercaseMessage.includes("how are you")) {
-					response = "I'm doing well! Always excited to talk about movies and help you find your next favorite film. How about you?";
-				}
-				else {
-					response = "That's an interesting question about entertainment! I can recommend movies, discuss film themes, actors, directors, or help you find something new to watch. Could you tell me more about what you're looking for?";
-				}
-				
-				return response;
-			}
 			
 			// Add a message to the chat
 			function addMessage(content, isUser = false) {
@@ -586,15 +546,44 @@
 				// Show thinking indicator
 				showThinking();
 				
-				// Simulate delay for AI response
-				setTimeout(function() {
-					// Remove thinking indicator
-					hideThinking();
-					
-					// Generate and add AI response
-					const response = simulateAIResponse(message);
-					addMessage(response);
-				}, 1000);
+				// Get favorites for context
+				const favorites = JSON.parse(localStorage.getItem('movieFavorites')) || [];
+				
+				// Call the real backend API
+				$.ajax({
+					url: '{% url "aibot_chat" %}',
+					type: 'POST',
+					contentType: 'application/json',
+					data: JSON.stringify({
+						message: message,
+						favorites: favorites
+					}),
+					headers: {
+						'X-CSRFToken': getCookie('csrftoken')
+					},
+					success: function(response) {
+						// Remove thinking indicator
+						hideThinking();
+						
+						if (response.success) {
+							// Format response content with proper HTML
+							const formattedContent = response.content.replace(/\n/g, '<br>');
+							addMessage(formattedContent);
+						} else {
+							// Show error message
+							addMessage('Sorry, I encountered an error processing your request. Please try again.');
+							console.error('Error:', response.error);
+						}
+					},
+					error: function(xhr, status, error) {
+						// Remove thinking indicator
+						hideThinking();
+						
+						// Show error message
+						addMessage('Sorry, something went wrong. Please try again later.');
+						console.error('Error:', error);
+					}
+				});
 			}
 			
 			// Load favorites from localStorage
@@ -603,6 +592,12 @@
 				
 				if (favorites.length === 0) {
 					// Show empty state
+					favoritesContainer.html(`
+						<div class="empty-state">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+							<p>Your favorite movies will appear here</p>
+						</div>
+					`);
 					return;
 				}
 				
@@ -626,6 +621,22 @@
 					
 					favoritesContainer.append(favoriteItem);
 				});
+			}
+			
+			// Get CSRF token from cookies
+			function getCookie(name) {
+				let cookieValue = null;
+				if (document.cookie && document.cookie !== '') {
+					const cookies = document.cookie.split(';');
+					for (let i = 0; i < cookies.length; i++) {
+						const cookie = cookies[i].trim();
+						if (cookie.substring(0, name.length + 1) === (name + '=')) {
+							cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+							break;
+						}
+					}
+				}
+				return cookieValue;
 			}
 			
 			// Event listeners

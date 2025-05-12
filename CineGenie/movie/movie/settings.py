@@ -56,7 +56,7 @@ ROOT_URLCONF = 'movie.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ["templates"],
+        'DIRS': [os.path.join(BASE_DIR, "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -139,4 +139,7 @@ TMDB_API_KEY = 'b9cc1363ba35084ff7e41934f68bb737'
 TMDB_API_URL = 'https://api.themoviedb.org/3'
 TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/'
 TMDB_POSTER_SIZE = 'w500'  # Can be 'w92', 'w154', 'w185', 'w342', 'w500', 'w780', 'original'
+
+# Gemini API Key
+GEMINI_API_KEY = 'AIzaSyBjllio0Y9lUG3b3gqKMcjcDK8QboEih6o'
 

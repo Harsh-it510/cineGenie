@@ -8,6 +8,7 @@ from django.conf import settings
 from tmdbv3api import TMDb, Movie
 import logging
 import json
+from .aibot import MovieAIBot
 
 logger = logging.getLogger(__name__)
 
@@ -176,6 +177,11 @@ def movie_details(request, movie_id=None):
     
     if movie_id:
         movie = get_movie_details(movie_id)
+        # Add OTT platform information
+        if movie:
+            movie_title = movie.get('title', '')
+            movie_id = movie.get('id', 0)
+            movie['ott_platform'] = get_mock_ott_platform(movie_id, movie_title)
         return render(request, 'details.html', {'movie': movie})
     else:
         # Redirect to home if no movie_id is provided
@@ -198,45 +204,57 @@ def search_movies(request):
         # Initialize TMDb API with longer timeout
         tmdb = TMDb()
         tmdb.api_key = settings.TMDB_API_KEY
-        tmdb.timeout = 15
+        tmdb.timeout = 30  # Increase timeout
         
         # Create movie instance
         movie = Movie()
         
         # Search for movies
+        logger.info(f"Searching for movies with query: {query}")
         search_results = movie.search(query)
+        logger.info(f"Found {len(search_results) if search_results else 0} results")
         
         # Process search results
         processed_results = []
         for result in search_results:
-            # Prepare poster path
-            poster_path = None
-            if hasattr(result, 'poster_path') and result.poster_path:
-                poster_path = f"{settings.TMDB_IMAGE_BASE_URL}{settings.TMDB_POSTER_SIZE}{result.poster_path}"
-            
-            # Safe attribute access for release year
-            release_year = None
-            if hasattr(result, 'release_date') and result.release_date:
-                try:
-                    release_year = result.release_date[:4]
-                except (IndexError, TypeError):
-                    pass
-            
-            # Get vote average
-            vote_average = None
-            if hasattr(result, 'vote_average'):
-                vote_average = round(result.vote_average, 1)
-            
-            # Build the movie object
-            processed_movie = {
-                'id': result.id if hasattr(result, 'id') else None,
-                'title': result.title if hasattr(result, 'title') else "Unknown Title",
-                'poster_path': poster_path,
-                'release_year': release_year,
-                'vote_average': vote_average,
-                'overview': result.overview[:150] + '...' if hasattr(result, 'overview') and result.overview else None
-            }
-            processed_results.append(processed_movie)
+            try:
+                # Prepare poster path
+                poster_path = None
+                if hasattr(result, 'poster_path') and result.poster_path:
+                    poster_path = f"{settings.TMDB_IMAGE_BASE_URL}{settings.TMDB_POSTER_SIZE}{result.poster_path}"
+                
+                # Safe attribute access for release year
+                release_year = None
+                if hasattr(result, 'release_date') and result.release_date:
+                    try:
+                        release_year = result.release_date[:4]
+                    except (IndexError, TypeError):
+                        pass
+                
+                # Get vote average
+                vote_average = None
+                if hasattr(result, 'vote_average'):
+                    vote_average = round(result.vote_average, 1)
+                
+                # Add mock OTT platform data
+                movie_id = result.id if hasattr(result, 'id') else 0
+                movie_title = result.title if hasattr(result, 'title') else ""
+                ott_platform = get_mock_ott_platform(movie_id, movie_title)
+                
+                # Build the movie object
+                processed_movie = {
+                    'id': movie_id,
+                    'title': movie_title or "Unknown Title",
+                    'poster_path': poster_path,
+                    'release_year': release_year,
+                    'vote_average': vote_average,
+                    'overview': result.overview[:150] + '...' if hasattr(result, 'overview') and result.overview else None,
+                    'ott_platform': ott_platform
+                }
+                processed_results.append(processed_movie)
+            except Exception as processing_error:
+                logger.error(f"Error processing search result: {str(processing_error)}")
+                continue
     
     except Exception as e:
         logger.error(f"Movie search failed: {str(e)}")
@@ -252,6 +270,62 @@ def search_movies(request):
         'query': query
     })
 
+def get_mock_ott_platform(movie_id, title):
+    """
+    Generate mock OTT platform data for demonstration purposes.
+    In a production environment, this would be replaced with actual data from a provider API.
+    
+    Returns a dict with:
+    - name: Platform name
+    - url: URL to the movie on that platform
+    - logo: Path to the platform logo
+    """
+    # Simple algorithm to assign platforms based on ID or title patterns
+    # This is just for demonstration - real data would come from a proper source
+    
+    # For specific titles (for demonstration)
+    title_lower = title.lower()
+    if 'panchayat' in title_lower:
+        return {
+            'name': 'Amazon Prime Video',
+            'url': 'https://www.primevideo.com/detail/Panchayat/0KEP4A6DWRKFYQFTSU5RXHEAN2',
+            'logo': '/static/images/platforms/prime_video.png'
+        }
+    
+    # Use the movie ID to deterministically assign platforms
+    # This ensures the same movie always gets the same platform in our demo
+    platform_index = movie_id % 5  # Cycle through 5 possible platforms
+    
+    platforms = [
+        {
+            'name': 'Netflix',
+            'url': f'https://www.netflix.com/title/{movie_id}',
+            'logo': '/static/images/platforms/netflix.png'
+        },
+        {
+            'name': 'Amazon Prime Video',
+            'url': f'https://www.primevideo.com/detail/{movie_id}',
+            'logo': '/static/images/platforms/prime_video.png'
+        },
+        {
+            'name': 'Disney+ Hotstar',
+            'url': f'https://www.hotstar.com/in/movies/{movie_id}',
+            'logo': '/static/images/platforms/hotstar.png'
+        },
+        {
+            'name': 'Sony LIV',
+            'url': f'https://www.sonyliv.com/movies/{movie_id}',
+            'logo': '/static/images/platforms/sonyliv.png'
+        },
+        {
+            'name': 'Zee5',
+            'url': f'https://www.zee5.com/movies/{movie_id}',
+            'logo': '/static/images/platforms/zee5.png'
+        }
+    ]
+    
+    return platforms[platform_index]
+
 def ai_chat(request):
     """
     View function for the AI chat page.
@@ -259,7 +333,7 @@ def ai_chat(request):
     The chatbot can provide movie recommendations, information, and discuss user favorites.
     """
     # Get user favorites from session or empty list
-    favorites = []
+    favorites = request.session.get('favorites', [])
     
     # If user is authenticated, we can load their favorites from database in the future
     # For now, we'll handle this client-side with localStorage
@@ -269,3 +343,58 @@ def ai_chat(request):
     }
     
     return render(request, 'ai_chat.html', context)
+
+def aibot_chat(request):
+    """
+    View function for handling AI chatbot queries.
+    Takes user message and favorite movies as input, returns AI response.
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user_message = data.get('message', '')
+            favorites = data.get('favorites', [])
+            
+            # Initialize AI bot with API key from settings
+            api_key = getattr(settings, 'GEMINI_API_KEY', '')
+            bot = MovieAIBot(api_key=api_key)
+            
+            # Add favorite movies to context if available
+            if favorites:
+                bot.add_favorite_movies(favorites)
+            
+            # Get response from AI
+            response = bot.get_response(user_message)
+            
+            return JsonResponse({
+                'success': True,
+                'step': response.get('step', 'error'),
+                'content': response.get('content', 'Sorry, I could not process your request'),
+            })
+            
+        except Exception as e:
+            logger.error(f"AI chat error: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+    
+    # If not a POST request, return error
+    return JsonResponse({
+        'success': False,
+        'error': 'Only POST requests are supported'
+    })
+
+def ai_chat_combined(request):
+    """
+    View function for the combined AI chat page.
+    This uses the UI from ai_chat.html with the backend functionality from aibot.
+    """
+    # Get user favorites from session or empty list
+    favorites = request.session.get('favorites', [])
+    
+    context = {
+        'favorites': favorites
+    }
+    
+    return render(request, 'ai_chat_combined.html', context)
